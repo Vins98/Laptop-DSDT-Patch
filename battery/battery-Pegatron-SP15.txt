@@ -1,0 +1,83 @@
+#DSDT Patch for Pegatron SP15 based notebooks.
+#Works with Bytespeed SP15, SP15-UMA, SP15R
+#Works with any Pegatron SP15 based notebook
+#Works with Olivetti OliBook S1500
+#Should work with any Intel Spring Peak based notebooks with the following specs:
+#HM55 Express Chipset
+#i3,i5,i7 Arrandale with iGPU and no dGPU
+#For audio, you need to rename HDAC to HDEF and use any patch on the repo,
+#then use AppleALC with Lilu, works automatically, use layout-id 13.
+
+#Create B1B2 Method
+into method label B1B2 remove_entry;
+into definitionblock code_regex . insert
+begin
+Method (B1B2, 2, NotSerialized) { Return(Or(Arg0, ShiftLeft(Arg1, 8))) }\n
+end;
+
+#Split 16-bit registers
+
+into device label EC0 code_regex GLRX,\s+16 replace_matched begin LRX0,8,LRX1,8 end;
+into device label EC0 code_regex GLRY,\s+16 replace_matched begin LRY0,8,LRY1,8 end;
+into device label EC0 code_regex GLRZ,\s+16 replace_matched begin LRZ0,8,LRZ1,8 end;
+into device label EC0 code_regex GSEN,\s+16 replace_matched begin SEN0,8,SEN1,8 end;
+into device label EC0 code_regex GWKE,\s+16 replace_matched begin WKE0,8,WKE1,8 end;
+into device label EC0 code_regex TA0R,\s+16 replace_matched begin A0R0,8,A0R1,8 end;
+into device label EC0 code_regex TA1R,\s+16 replace_matched begin A1R0,8,A1R1,8 end;
+into device label EC0 code_regex B0PN,\s+16 replace_matched begin XPN0,8,XPN1,8 end;
+into device label EC0 code_regex B0VL,\s+16 replace_matched begin XVL0,8,XVL1,8 end;
+into device label EC0 code_regex B0RC,\s+16 replace_matched begin XRC0,8,XRC1,8 end;
+into device label EC0 code_regex B0FC,\s+16 replace_matched begin XFC0,8,XFC1,8 end;
+into device label EC0 code_regex B0MD,\s+16 replace_matched begin XMD0,8,XMD1,8 end;
+into device label EC0 code_regex B0ST,\s+16 replace_matched begin XST0,8,XST1,8 end;
+into device label EC0 code_regex B0CC,\s+16 replace_matched begin XCC0,8,XCC1,8 end;
+into device label EC0 code_regex B0TM,\s+16 replace_matched begin XTM0,8,XTM1,8 end;
+into device label EC0 code_regex B0C1,\s+16 replace_matched begin XC10,8,XC11,8 end;
+into device label EC0 code_regex B0C2,\s+16 replace_matched begin XC20,8,XC21,8 end;
+into device label EC0 code_regex B0C3,\s+16 replace_matched begin XC30,8,XC31,8 end;
+into device label EC0 code_regex B0C4,\s+16 replace_matched begin XC40,8,XC41,8 end;
+into device label EC0 code_regex B1PN,\s+16 replace_matched begin YPN0,8,YPN1,8 end;
+into device label EC0 code_regex B1VL,\s+16 replace_matched begin YVL0,8,YVL1,8 end;
+into device label EC0 code_regex B1RC,\s+16 replace_matched begin YRC0,8,YRC1,8 end;
+into device label EC0 code_regex B1FC,\s+16 replace_matched begin YFC0,8,YFC1,8 end;
+into device label EC0 code_regex B1MD,\s+16 replace_matched begin YMD0,8,YMD1,8 end;
+into device label EC0 code_regex B1ST,\s+16 replace_matched begin YST0,8,YST1,8 end;
+into device label EC0 code_regex B1CC,\s+16 replace_matched begin YCC0,8,YCC1,8 end;
+into device label EC0 code_regex B1TM,\s+16 replace_matched begin YTM0,8,YTM1,8 end;
+into device label EC0 code_regex B1C1,\s+16 replace_matched begin YC10,8,YC11,8 end;
+into device label EC0 code_regex B1C2,\s+16 replace_matched begin YC20,8,YC21,8 end;
+into device label EC0 code_regex B1C3,\s+16 replace_matched begin YC30,8,YC31,8 end;
+into device label EC0 code_regex B1C4,\s+16 replace_matched begin YC40,8,YC41,8 end;
+into device label EC0 code_regex B0DC,\s+16 replace_matched begin XDC0,8,XDC1,8 end;
+into device label EC0 code_regex B0DV,\s+16 replace_matched begin XDV0,8,XDV1,8 end;
+into device label EC0 code_regex B0SN,\s+16 replace_matched begin XSN0,8,XSN1,8 end;
+into device label EC0 code_regex B0SC,\s+16 replace_matched begin XSC0,8,XSC1,8 end;
+into device label EC0 code_regex B1DC,\s+16 replace_matched begin YDC0,8,YDC1,8 end;
+into device label EC0 code_regex B1DV,\s+16 replace_matched begin YDV0,8,YDV1,8 end;
+into device label EC0 code_regex B1SN,\s+16 replace_matched begin YSN0,8,YSN1,8 end;
+into device label EC0 code_regex B1SC,\s+16 replace_matched begin YSC0,8,YSC1,8 end;
+
+#Fix 16-bit methods
+into method label BIF0 code_regex \(B1MD, replaceall_matched begin (B1B2(YMD0,YMD1), end;
+into method label BIF0 code_regex \(B0MD, replaceall_matched begin (B1B2(XMD0,XMD1), end;
+into method label BIF1 code_regex \(B1DC, replaceall_matched begin (B1B2(YDC0,YDC1), end;
+into method label BIF1 code_regex \(B0DC, replaceall_matched begin (B1B2(XDC0,XDC1), end;
+into method label BIF2 code_regex \(B1FC, replaceall_matched begin (B1B2(YFC0,YFC1), end;
+into method label BIF2 code_regex \(B0FC, replaceall_matched begin (B1B2(XFC0,XFC1), end;
+into method label BIF3 code_regex \(B1MD, replaceall_matched begin (B1B2(YMD0,YMD1), end;
+into method label BIF3 code_regex \(B0MD, replaceall_matched begin (B1B2(XMD0,XMD1), end;
+into method label BIF4 code_regex \(B1DV, replaceall_matched begin (B1B2(YDV0,YDV1), end;
+into method label BIF4 code_regex \(B0DV, replaceall_matched begin (B1B2(XDV0,XDV1), end;
+into method label BIFA code_regex \(B1SN, replaceall_matched begin (B1B2(YSN0,YSN1), end;
+into method label BIFA code_regex \(B0SN, replaceall_matched begin (B1B2(XSN0,XSN1), end;
+into method label BSTS code_regex \(B1ST, replaceall_matched begin (B1B2(YST0,YST1), end;
+into method label BSTS code_regex \(B0ST, replaceall_matched begin (B1B2(XST0,XST1), end;
+into method label BCRT code_regex \(B1CC, replaceall_matched begin (B1B2(YCC0,YCC1), end;
+into method label BCRT code_regex \(B0CC, replaceall_matched begin (B1B2(XCC0,XCC1), end;
+into method label BRCP code_regex \(B1RC, replaceall_matched begin (B1B2(YRC0,YRC1), end;
+into method label BRCP code_regex \(B0RC, replaceall_matched begin (B1B2(XRC0,XRC1), end;
+into method label BVOT code_regex \(B1VL, replaceall_matched begin (B1B2(YVL0,YVL1), end;
+into method label BVOT code_regex \(B0VL, replaceall_matched begin (B1B2(XVL0,XVL1), end;
+into method label XLRX code_regex \(GLRX replaceall_matched begin (B1B2(LRX0,LRX1) end;
+into method label XLRY code_regex \(GLRY replaceall_matched begin (B1B2(LRY0,LRY1) end;
+into method label XLRZ code_regex \(GLRZ replaceall_matched begin (B1B2(LRZ0,LRZ1) end;
